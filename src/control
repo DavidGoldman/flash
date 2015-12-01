@@ -1,0 +1,10 @@
+Package: com.golddavid.flash
+Name: Flash
+Depends: mobilesubstrate
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: In a flash
+Maintainer: David Goldman
+Author: David Goldman
+Section: Tweaks
+Icon: file:///Library/Application Support/Flash/Resources.bundle/Flash@2x.png
