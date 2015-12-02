@@ -11,6 +11,8 @@ static const int kSensorInterval = (int) (0.5 * 1000000); // Check every half se
 static const int kPrimaryUsagePage = 0xff00;
 static const int kPrimaryUsage = 4;
 
+// You can lower this if it's triggering when there's a decent amount of light. The min lux value is
+// 0, so this should be >= 1.
 static const int kMinLuxForHidden = 6;
 static const int kUnassignedLux = -1;
 
@@ -81,8 +83,11 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self name:kBacklightNotification object:nil];
+  [self onFlashlightSettingDealloc:_flashlightSetting];
+
   [self _unbindSystemClient];
   CFRelease(_eventSystemClient);
+
   [_delegates release];
   [super dealloc];
 }
