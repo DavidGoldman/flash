@@ -174,7 +174,9 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
 // Tether support. I'm watching you, @phillipten.
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
   shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-  if (%c(DGTController) && [otherGestureRecognizer isKindOfClass:[UITapGestureRecognizer class]]) {
+  Class DGTController = %c(DGTController);
+  if (DGTController && [otherGestureRecognizer isKindOfClass:[UITapGestureRecognizer class]] &&
+      [otherGestureRecognizer.delegate isKindOfClass:DGTController]) {
     return YES;
   }
   return NO;
