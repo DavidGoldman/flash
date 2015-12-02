@@ -3,6 +3,8 @@ Flash
 
 [Tweak Battles 3](http://www.tweakbattles.com/) submission *by David Goldman and Andrew Abosh*
 
+![Flash in the bottom left corner](flash.jpeg)
+
 Intelligently uses the ambient light sensor built-in your device to provide a button to invoke the LED flash. This button appears right on the lock screen, exactly where a Siri suggested app would be.
 
 **Compilation:**
