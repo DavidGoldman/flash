@@ -140,7 +140,7 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
 #pragma mark - HID Stuff
 
 - (void)_bindSystemClient {
-  if (!_eventSystemClientRegistered && _screenIsOn) {
+  if (!_eventSystemClientRegistered && _screenIsOn && _delegates.count > 0) {
     IOHIDEventSystemClientScheduleWithRunLoop(_eventSystemClient, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     IOHIDEventSystemClientRegisterEventCallback(_eventSystemClient, &handleHIDEvent, self, NULL);
     _eventSystemClientRegistered = YES;
