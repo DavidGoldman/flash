@@ -3,7 +3,7 @@ Name: Flash
 Depends: mobilesubstrate
 Version: 1.0.0
 Architecture: iphoneos-arm
-Description: In a flash
+Description: Light in a flash
 Maintainer: David Goldman
 Author: David Goldman
 Section: Tweaks
