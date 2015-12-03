@@ -9,6 +9,7 @@
 
 - (void)flashButtonTapped:(FLASHFlashButton *)button;
 - (void)onAmbientLightSensorEvent:(int)lux;
+- (BOOL)berryView:(UIView *)berryView shouldIgnoreHitTest:(CGPoint)test withEvent:(UIEvent *)event;
 
 - (void)addDelegate:(id<FLASHFlashlightDelegate>)delegate;
 - (void)removeDelegate:(id<FLASHFlashlightDelegate>)delegate;

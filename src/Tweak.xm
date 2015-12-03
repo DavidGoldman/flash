@@ -1,4 +1,5 @@
 #import "Macros.h"
+#import "BCBerryView.h"
 #import "FLASHFlashButton.h"
 #import "FLASHFlashController.h"
 #import "SBCCFlashlightSetting.h"
@@ -67,6 +68,22 @@ const CGFloat kButtonSize = 50;
   }
 }
 
+%end
+
+// Hacky support for BerryC8 by hooking hitTest:withEvent:, preventing it from receiving events that
+// are inside a visible FLASHFlashButton.
+//
+// This is definitely not the most optimal solution - a proper one would probably need to hook into
+// SBLockScreenHintManager in order to add _general_ support for our FLASHFlashButton.
+%hook BCBerryView
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+  if ([[FLASHFlashController sharedFlashController] berryView:self
+                                          shouldIgnoreHitTest:point
+                                                    withEvent:event]) {
+    return nil;
+  }
+  return %orig;
+}
 %end
 
 %ctor {

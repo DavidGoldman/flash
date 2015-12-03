@@ -107,6 +107,22 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
   [self _showDelegates:show immediately:NO];
 }
 
+- (BOOL)berryView:(UIView *)berryView shouldIgnoreHitTest:(CGPoint)test withEvent:(UIEvent *)event {
+  for (id<FLASHFlashlightDelegate> delegate in _delegates) {
+    if ([delegate isKindOfClass:[FLASHFlashButton class]]) {
+      FLASHFlashButton *button = (FLASHFlashButton *)delegate;
+      if (!button.visible) {
+        continue;
+      }
+      CGPoint point = [button convertPoint:test fromView:berryView];
+      if ([button hitTest:point withEvent:event]) {
+        return YES;
+      }
+    }
+  }
+  return NO;
+}
+
 // Dirty, but w/e.
 - (void)_showDelegates:(BOOL)show immediately:(BOOL)immediately {
   _showDelegates = show;
