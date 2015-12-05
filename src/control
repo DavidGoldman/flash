@@ -4,7 +4,7 @@ Depends: mobilesubstrate
 Version: 1.0.0
 Architecture: iphoneos-arm
 Description: Light in a flash
-Maintainer: David Goldman
-Author: David Goldman
+Maintainer: David Goldman <help@golddavid.com>
+Author: David Goldman <help@golddavid.com>
 Section: Tweaks
 Icon: file:///Library/Application Support/Flash/Resources.bundle/Flash@2x.png
