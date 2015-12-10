@@ -61,8 +61,14 @@ const CGFloat kButtonSize = 50;
   UIView *button = (UIView *) [foregroundLockHUDView viewWithTag:kFlashButtonTag];
   if (button) {
     CGRect frame = foregroundLockHUDView.bounds;
-    CGRect newFrame = CGRectMake(CGRectGetMinX(frame) + kButtonPadding,
-                                 CGRectGetMaxY(frame) - kButtonPadding - kButtonSize,
+    CGFloat x;
+    UIApplication *app = [UIApplication sharedApplication];
+    if (app.userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionLeftToRight) {
+      x = CGRectGetMinX(frame) + kButtonPadding;
+    } else {
+      x = CGRectGetMaxX(frame) - kButtonPadding - kButtonSize;
+    }
+    CGRect newFrame = CGRectMake(x, CGRectGetMaxY(frame) - kButtonPadding - kButtonSize,
                                  kButtonSize, kButtonSize);
     button.frame = newFrame;
   }

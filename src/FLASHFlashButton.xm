@@ -71,9 +71,14 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
 
   const CGFloat cornerInset = [%c(SBFLockScreenMetrics) slideUpGrabberInset];
   CGRect bounds = self.bounds;
-  CGRect frame = CGRectMake(bounds.origin.x + cornerInset,
-                            CGRectGetMaxY(bounds) - cornerInset - kImageViewSize,
-                            kImageViewSize,
+  CGFloat x;
+  UIApplication *app = [UIApplication sharedApplication];
+  if (app.userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionLeftToRight) {
+    x = CGRectGetMinX(bounds) + cornerInset;
+  } else {
+    x = CGRectGetMaxX(bounds) - cornerInset - kImageViewSize;
+  }
+  CGRect frame = CGRectMake(x, CGRectGetMaxY(bounds) - cornerInset - kImageViewSize, kImageViewSize,
                             kImageViewSize);
   _flashImageView.frame = frame;
 }
