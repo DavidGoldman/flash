@@ -4,10 +4,14 @@
 #import "FLASHFlashController.h"
 #import "SBCCFlashlightSetting.h"
 #import "SBLockScreenViewHeaders.h"
+#import "SBSlideUpAppGrabberView.h"
+#import "SBWallpaperEffectView.h"
 
-const NSInteger kFlashButtonTag = 0x666c7368;
-const CGFloat kButtonPadding = 0;
-const CGFloat kButtonSize = 50;
+static const NSInteger kFlashButtonTag = 0x666c7368;
+static const CGFloat kButtonSize = 50;
+
+static const NSInteger kWallpaperVariantStaticWallpaper = 0;
+static const NSInteger kWallpaperStyleSemiLightTintedBlur = 10;
 
 %hook SBCCFlashlightSetting
 - (id)init {
@@ -24,23 +28,82 @@ const CGFloat kButtonSize = 50;
 %hook SBLockScreenView
 
 %new
-- (void)FLASH_addOrRemoveButton:(BOOL)addButton {
+- (FLASHFlashButton *)FLASH_flashButton {
   UIView *foregroundLockHUDView = MSHookIvar<UIView *>(self, "_foregroundLockHUDView");
-  UIView *button = (UIView *) [foregroundLockHUDView viewWithTag:kFlashButtonTag];
+  return (FLASHFlashButton *) [foregroundLockHUDView viewWithTag:kFlashButtonTag];
+}
+
+%new
+- (UIView *)FLASH_flashButtonWallpaperEffectView {
+  UIView *view = objc_getAssociatedObject(self, @selector(FLASH_flashButtonWallpaperEffectView));
+  if (!view) {
+    SBWallpaperEffectView *effectView =
+      [[%c(SBWallpaperEffectView) alloc] initWithWallpaperVariant:kWallpaperVariantStaticWallpaper];
+    effectView.style = kWallpaperStyleSemiLightTintedBlur;
+    objc_setAssociatedObject(self, @selector(FLASH_flashButtonWallpaperEffectView), effectView,
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    return [effectView autorelease];
+  }
+  return view;
+}
+
+%new
+- (void)FLASH_addOrRemoveButton:(BOOL)addButton {
+  FLASHFlashButton *button = [self FLASH_flashButton];
 
   if (addButton) {
     if (!button) {
+      UIView *foregroundLockHUDView = MSHookIvar<UIView *>(self, "_foregroundLockHUDView");
+
       // This can be called from within an animation block, so we have to be careful as we don't
       // want the init occurring with an animation.
       [UIView performWithoutAnimation:^{
-          FLASHFlashButton *fb = [[FLASHFlashButton alloc] initWithFrame:CGRectZero];
+          FLASHFlashButton *fb = [[FLASHFlashButton alloc] initWithFrame:CGRectZero classicIcon:NO];
           fb.tag = kFlashButtonTag;
           [foregroundLockHUDView addSubview:fb];
+          [self _updateCornerGrabberBackground];
+          [self _updateCornerGrabberLegibilityIfNecessary];
           [fb release];
       }];
     }
   } else {
     [button removeFromSuperview];
+  }
+}
+
+- (void)_updateCornerGrabberBackground {
+  %orig;
+
+  // Mimic this method's impl for our button.
+  if ([self _shouldUseVibrancy]) {
+    FLASHFlashButton *button = [self FLASH_flashButton];
+    UIView *vibrantView = button.slideUpAppGrabberView;
+    if (vibrantView) {
+      CGRect screenRect = [vibrantView.superview convertRect:vibrantView.frame toView:nil];
+      [self _updateVibrantView:vibrantView
+                    screenRect:screenRect
+                backgroundView:[self FLASH_flashButtonWallpaperEffectView]];
+    }
+  }
+}
+
+- (void)_updateCornerGrabberLegibilityIfNecessary {
+  %orig;
+
+  // Mimic this method's impl for our button.
+  FLASHFlashButton *button = [self FLASH_flashButton];
+  SBSlideUpAppGrabberView *vibrantView = button.slideUpAppGrabberView;
+  if (!vibrantView) {
+    return;
+  }
+  if ([self _shouldUseVibrancy]) {
+    vibrantView.vibrancyAllowed = YES;
+  } else {
+    vibrantView.vibrancyAllowed = NO;
+    _UILegibilitySettings *ls = self.legibilitySettings;
+    CGFloat strength = [[self _legibilityPrototypeSettings] cameraGrabberStrengthForStyle:ls.style];
+    [vibrantView setStrength:strength];
+    [vibrantView updateForChangedSettings:ls];
   }
 }
 
@@ -57,19 +120,18 @@ const CGFloat kButtonSize = 50;
 - (void)_layoutBottomLeftGrabberView {
   %orig;
 
-  UIView *foregroundLockHUDView = MSHookIvar<UIView *>(self, "_foregroundLockHUDView");
-  UIView *button = (UIView *) [foregroundLockHUDView viewWithTag:kFlashButtonTag];
+  FLASHFlashButton *button = [self FLASH_flashButton];
   if (button) {
+    UIView *foregroundLockHUDView = MSHookIvar<UIView *>(self, "_foregroundLockHUDView");
     CGRect frame = foregroundLockHUDView.bounds;
     CGFloat x;
     UIApplication *app = [UIApplication sharedApplication];
     if (app.userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionLeftToRight) {
-      x = CGRectGetMinX(frame) + kButtonPadding;
+      x = CGRectGetMinX(frame);
     } else {
-      x = CGRectGetMaxX(frame) - kButtonPadding - kButtonSize;
+      x = CGRectGetMaxX(frame) - kButtonSize;
     }
-    CGRect newFrame = CGRectMake(x, CGRectGetMaxY(frame) - kButtonPadding - kButtonSize,
-                                 kButtonSize, kButtonSize);
+    CGRect newFrame = CGRectMake(x, CGRectGetMaxY(frame) - kButtonSize, kButtonSize, kButtonSize);
     button.frame = newFrame;
   }
 }

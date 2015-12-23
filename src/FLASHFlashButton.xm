@@ -5,15 +5,16 @@
 
 #import "SBFLockScreenMetrics.h"
 #import "SBLockScreenViewHeaders.h"
+#import "SBSlideUpAppGrabberView.h"
 #import "UIImage+Private.h"
-
-static const CGFloat kImageViewSize = 29;
 
 static const CGFloat kOnAlpha = 1;
 static const CGFloat kOffAlpha = 0.6;
 
 static const NSTimeInterval kHideTimerInterval = 3;
 static const NSTimeInterval kAnimationDuration = 0.35;
+
+static NSString * const kColorFlowSecondaryColorKey = @"SecondaryColor";
 
 static SBLockScreenScrollView * getLockScreenScrollView() {
   SBLockScreenViewController *vc =
@@ -23,10 +24,11 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
 
 @implementation FLASHFlashButton {
   UIImageView *_flashImageView;
+  SBSlideUpAppGrabberView *_slideUpAppGrabberView;
   NSTimer *_hideTimer;
 }
 
-- (instancetype)initWithFrame:(CGRect)frame {
+- (instancetype)initWithFrame:(CGRect)frame classicIcon:(BOOL)classicIcon {
   self = [super initWithFrame:frame];
   if (self) {
     UITapGestureRecognizer *tapGestureRecogizer =
@@ -37,12 +39,22 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
     [tapGestureRecogizer release];
 
     NSBundle *bundle = [NSBundle bundleWithPath:kBundlePath];
-    UIImage *icon = [UIImage imageNamed:@"Flash" inBundle:bundle];
-
-    _flashImageView = [[UIImageView alloc] initWithImage:icon];
-    _flashImageView.alpha = kOffAlpha;
-    _flashImageView.userInteractionEnabled = NO;
-    [self addSubview:_flashImageView];
+    if (classicIcon) {
+      UIImage *icon = [UIImage imageNamed:@"Flash" inBundle:bundle];
+      _flashImageView = [[UIImageView alloc] initWithImage:icon];
+      _flashImageView.alpha = kOffAlpha;
+      [self addSubview:_flashImageView];
+    } else {
+      UIImage *icon = [UIImage imageNamed:@"FlashGhosted" inBundle:bundle];
+      _slideUpAppGrabberView = [[%c(SBSlideUpAppGrabberView) alloc] initWithAdditionalTopPadding:NO
+                                                                            invertVerticalInsets:NO];
+      [_slideUpAppGrabberView setGrabberImage:icon];
+      [_slideUpAppGrabberView sizeToFit];
+      _slideUpAppGrabberView.vibrancyAllowed = YES;
+      _slideUpAppGrabberView.alpha = kOffAlpha;
+      _slideUpAppGrabberView.userInteractionEnabled = NO;
+      [self addSubview:_slideUpAppGrabberView];
+    }
 
     _visible = NO;
     self.alpha = 0;
@@ -63,28 +75,39 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
 - (void)dealloc {
   // _hideTimer must be nil otherwise we wouldn't dealloc (it holds a strong ref to us).
   [_flashImageView release];
+  [_slideUpAppGrabberView release];
   [super dealloc];
 }
 
 - (void)layoutSubviews {
   [super layoutSubviews];
 
+  UIView *iconView = [self _iconView];
   const CGFloat cornerInset = [%c(SBFLockScreenMetrics) slideUpGrabberInset];
+  const CGSize imageSize = iconView.frame.size;
   CGRect bounds = self.bounds;
   CGFloat x;
   UIApplication *app = [UIApplication sharedApplication];
   if (app.userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionLeftToRight) {
     x = CGRectGetMinX(bounds) + cornerInset;
   } else {
-    x = CGRectGetMaxX(bounds) - cornerInset - kImageViewSize;
+    x = CGRectGetMaxX(bounds) - cornerInset - imageSize.width;
   }
-  CGRect frame = CGRectMake(x, CGRectGetMaxY(bounds) - cornerInset - kImageViewSize, kImageViewSize,
-                            kImageViewSize);
-  _flashImageView.frame = frame;
+  CGRect frame = CGRectMake(x, CGRectGetMaxY(bounds) - cornerInset - imageSize.height,
+                            imageSize.width, imageSize.height);
+  iconView.frame = frame;
 }
 
 - (void)_handleTap:(UIGestureRecognizer *)sender {
   [[FLASHFlashController sharedFlashController] flashButtonTapped:self];
+}
+
+- (UIView *)_iconView {
+  return (_flashImageView) ? _flashImageView : _slideUpAppGrabberView;
+}
+
+- (SBSlideUpAppGrabberView *)slideUpAppGrabberView {
+  return _slideUpAppGrabberView;
 }
 
 #pragma mark - Timering
@@ -164,13 +187,22 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
   }
 }
 
+#pragma mark - Coloring
+
+- (void)colorizeWithInfo:(NSDictionary *)info {
+  UIColor *color = info[kColorFlowSecondaryColorKey];
+  if ([_slideUpAppGrabberView respondsToSelector:@selector(cfw_colorizeWithColor:)]) {
+    [_slideUpAppGrabberView cfw_colorizeWithColor:color];
+  }
+}
+
 #pragma mark - FLASHFlashlightDelegate
 
 - (void)flashlightDidTurnOn:(BOOL)flag {
   if (flag != self.flashlightOn) {
     self.flashlightOn = flag;
 
-    _flashImageView.alpha = (flag) ? kOnAlpha : kOffAlpha;
+    [self _iconView].alpha = (flag) ? kOnAlpha : kOffAlpha;
   }
 }
 

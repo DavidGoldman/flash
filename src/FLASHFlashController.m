@@ -16,6 +16,8 @@ static const int kPrimaryUsage = 4;
 static const int kMinLuxForHidden = 6;
 static const int kUnassignedLux = -1;
 
+static NSString * const kColorFlowColorization = @"ColorFlowLockScreenColorizationNotification";
+static NSString * const kColorFlowReversion = @"ColorFlowLockScreenColorReversionNotification";
 static NSString * const kBacklightNotification = @"SBBacklightLevelChangedNotification";
 static NSString * const kBacklightKey = @"SBBacklightNewFactorKey";
 
@@ -26,6 +28,10 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
     [flashController onAmbientLightSensorEvent:lux];
   }
 }
+
+@interface FLASHFlashController ()
+@property(nonatomic, retain) NSDictionary *colorInfo;
+@end
 
 @implementation FLASHFlashController {
   SBCCFlashlightSetting *_flashlightSetting;
@@ -74,20 +80,33 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
 
     NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
-                      selector:@selector(_handleBacklightNotification:)
+                      selector:@selector(_backlightNotification:)
                           name:kBacklightNotification
+                        object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(_colorizeNotification:)
+                          name:kColorFlowColorization
+                        object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(_reversionNotification:)
+                          name:kColorFlowReversion
                         object:nil];
   }
   return self;
 }
 
 - (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self name:kBacklightNotification object:nil];
+  NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter removeObserver:self name:kBacklightNotification object:nil];
+  [defaultCenter removeObserver:self name:kColorFlowColorization object:nil];
+  [defaultCenter removeObserver:self name:kColorFlowReversion object:nil];
+
   [self onFlashlightSettingDealloc:_flashlightSetting];
 
   [self _unbindSystemClient];
   CFRelease(_eventSystemClient);
 
+  [_colorInfo release];
   [_delegates release];
   [super dealloc];
 }
@@ -135,7 +154,7 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
   }
 }
 
-- (void)_handleBacklightNotification:(NSNotification *)notification {
+- (void)_backlightNotification:(NSNotification *)notification {
   // This seems to just be 0 or 1, but it looks like it is indeed a float -
   // MPUSystemMediaControlsViewController uses the floatValue method.
   float backlightLevel = [notification.userInfo[kBacklightKey] floatValue];
@@ -172,6 +191,30 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
   }
 }
 
+#pragma mark - ColorFlow
+
+- (void)setColorInfo:(NSDictionary *)dictionary {
+  if (![_colorInfo isEqual:dictionary]) {
+    [_colorInfo release];
+    _colorInfo = [dictionary retain];
+
+    for (id<FLASHFlashlightDelegate> delegate in _delegates) {
+      if ([delegate isKindOfClass:[FLASHFlashButton class]]) {
+        FLASHFlashButton *button = (FLASHFlashButton *)delegate;
+        [button colorizeWithInfo:dictionary];
+      }
+    }
+  }
+}
+
+- (void)_colorizeNotification:(NSNotification *)notification {
+  self.colorInfo = notification.userInfo;
+}
+
+- (void)_reversionNotification:(NSNotification *)notification {
+  self.colorInfo = nil;
+}
+
 #pragma mark - Delegates
 
 - (void)addDelegate:(id<FLASHFlashlightDelegate>)delegate {
@@ -182,6 +225,7 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
     if ([delegate isKindOfClass:[FLASHFlashButton class]]) {
       FLASHFlashButton *button = (FLASHFlashButton *)delegate;
       [button setVisible:_showDelegates immediately:YES animated:NO];
+      [button colorizeWithInfo:self.colorInfo];
     }
 
     [self _bindSystemClient];
