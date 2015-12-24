@@ -12,6 +12,7 @@
       key = "Enabled";
       id = "Enabled";
       label = "Enabled";
+      sublabel = "Quickly enable or disable Flash.";
       icon = "Enabled.png";
       default = 1;
       defaults = "com.golddavid.flash";
@@ -26,10 +27,11 @@
       cell = PSSwitchCell;
       cellClass = FLASHSwitchTableCell;
       PostNotification = "com.golddavid.flash/ReloadPrefs";
-      key = "ClassicIcon";
-      label = "Use Classic Icon";
+      key = "GhostedIcon";
+      label = "Ghosted Icon";
+      sublabel = "No app icon, just the bolt glyph.";
       icon = "Icon Appearance.png";
-      default = 1;
+      default = 0;
       defaults = "com.golddavid.flash";
     },
     {
@@ -38,13 +40,16 @@
       PostNotification = "com.golddavid.flash/ReloadPrefs";
       key = "OverrideHandoff";
       label = "Override Siri Suggestions";
+      sublabel = "Take priority over any Siri Suggestion.";
       icon = "Override Siri.png";
       default = 0;
       defaults = "com.golddavid.flash";
     },
     {
       cell = PSStaticTextCell;
+      cellClass = FLASHTableCell;
       id = "LightLevelText";
+      sublabel = "The light level at which the icon displays.";
       label = "Light Level";
       icon = "Light Level.png";
     },

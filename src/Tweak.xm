@@ -79,7 +79,7 @@ static NSString * const kFlashGrabberRequester = @"FLASH";
       // This can be called from within an animation block, so we have to be careful as we don't
       // want the init occurring with an animation.
       [UIView performWithoutAnimation:^{
-          BOOL classicIcon = [FLASHPrefsManager sharedInstance].classicIcon;
+          BOOL classicIcon = ![FLASHPrefsManager sharedInstance].ghostedIcon;
           FLASHFlashButton *fb = [[FLASHFlashButton alloc] initWithFrame:CGRectZero
                                                              classicIcon:classicIcon];
           fb.tag = kFlashButtonTag;

@@ -4,11 +4,11 @@
 #define kPrefsReloadDarwinNotification "com.golddavid.flash/ReloadPrefs"
 
 static NSString * const kEnabledKey = @"Enabled";
-static NSString * const kClassicIconKey = @"ClassicIcon";
+static NSString * const kGhostedIconKey = @"GhostedIcon";
 static NSString * const kHandoffKey = @"OverrideHandoff";
 static NSString * const kCutoffKey = @"LuxCutoff";
 static const BOOL kDefaultEnabled = YES;
-static const BOOL kDefaultClassicIcon = YES;
+static const BOOL kDefaultGhostedIcon = NO;
 static const BOOL kDefaultOverrideHandoff = NO;
 static const int kDefaultLuxCutoff = 6;
 
@@ -30,7 +30,7 @@ static void refreshPrefs(CFNotificationCenterRef center, void *observer, CFStrin
   self = [super init];
   if (self) {
     _enabled = kDefaultEnabled;
-    _classicIcon = kDefaultClassicIcon;
+    _ghostedIcon = kDefaultGhostedIcon;
     _overrideHandoff = kDefaultOverrideHandoff;
     _luxCutoff = kDefaultLuxCutoff;
 
@@ -59,7 +59,7 @@ static void refreshPrefs(CFNotificationCenterRef center, void *observer, CFStrin
 - (void)reload {
   NSDictionary *prefs = [self prefsDictionary];
   self.enabled = [self boolForValue:prefs[kEnabledKey] withDefault:kDefaultEnabled];
-  self.classicIcon = [self boolForValue:prefs[kClassicIconKey] withDefault:kDefaultClassicIcon];
+  self.ghostedIcon = [self boolForValue:prefs[kGhostedIconKey] withDefault:kDefaultGhostedIcon];
   self.overrideHandoff = [self boolForValue:prefs[kHandoffKey] withDefault:kDefaultOverrideHandoff];
   self.luxCutoff = [self intForValue:prefs[kCutoffKey] withDefault:kDefaultLuxCutoff];
 }

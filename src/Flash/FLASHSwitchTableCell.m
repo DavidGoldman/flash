@@ -8,8 +8,9 @@ static UIColor * UIColorFromRGB(int rgb) {
 }
 
 @implementation FLASHSwitchTableCell
-- (id)initWithStyle:(int)style reuseIdentifier:(id)identifier specifier:(id)specifier {
-  self = [super initWithStyle:style reuseIdentifier:identifier specifier:specifier];
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(id)identifier specifier:(id)specifier {
+  self = [super initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier specifier:specifier];
   if (self) {
     UISwitch *control = [self control];
     UIColor *tintColor = UIColorFromRGB(0xFFCD02);
@@ -18,6 +19,15 @@ static UIColor * UIColorFromRGB(int rgb) {
     _hidesSeparators = NO;
   }
   return self;
+}
+
+- (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {
+  [super refreshCellContentsWithSpecifier:specifier];
+  NSString *sublabel = [specifier propertyForKey:@"sublabel"];
+  if (sublabel) {
+    self.detailTextLabel.text = [sublabel description];
+    self.detailTextLabel.textColor = [UIColor grayColor];
+  }
 }
 
 - (UITableViewCellSeparatorStyle)wantedSeparatorStyle {

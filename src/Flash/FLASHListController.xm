@@ -3,6 +3,13 @@
 #import "FLASHHeaderCell.h"
 #import "FLASHSwitchTableCell.h"
 
+static UIColor * UIColorFromRGB(int rgb) {
+  return [UIColor colorWithRed:((rgb >> 16) & 0xFF) / 255.0F
+                         green:((rgb >> 8) & 0xFF) / 255.0F
+                          blue:(rgb & 0xFF) / 255.0F
+                         alpha:1];
+}
+
 @implementation FLASHListController
 
 - (id)specifiers {
@@ -35,23 +42,37 @@
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-  FLASHHeaderCell *headerCell = [self headerCell];
+  FLASHHeaderCell *headerCell = [self _headerCell];
   if (headerCell) {
-    CGFloat actualOffset = scrollView.contentOffset.y + [self contentYInset];
+    CGFloat actualOffset = scrollView.contentOffset.y + [self _contentYInset];
     [headerCell setContentYOffset:actualOffset];
   }
 }
 
-- (CGFloat)contentYInset {
+#pragma mark - Private Stuff
+
+- (CGFloat)_contentYInset {
   return [self table].contentInset.top;
 }
 
-- (FLASHHeaderCell *)headerCell {
+- (FLASHHeaderCell *)_headerCell {
   UIView *view = [self tableView:[self table] viewForHeaderInSection:0];
   if ([view isMemberOfClass:[FLASHHeaderCell class]]) {
     return (FLASHHeaderCell *)view;
   }
   return nil;
+}
+
+#pragma mark - View Lifecycle
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  [[UIApplication sharedApplication] keyWindow].tintColor = UIColorFromRGB(0xFFCD02);
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  [[UIApplication sharedApplication] keyWindow].tintColor = nil;
 }
 
 @end
