@@ -39,7 +39,7 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
     [getLockScreenScrollView().panGestureRecognizer requireGestureRecognizerToFail:tapGestureRecogizer];
     [tapGestureRecogizer release];
 
-    NSBundle *bundle = [NSBundle bundleWithPath:kBundlePath];
+    NSBundle *bundle = [NSBundle bundleWithPath:kPrefsBundlePath];
     if (classicIcon) {
       UIImage *icon = [UIImage imageNamed:@"Flash" inBundle:bundle];
       _flashImageView = [[UIImageView alloc] initWithImage:icon];

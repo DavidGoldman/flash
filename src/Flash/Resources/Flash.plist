@@ -1,0 +1,62 @@
+{
+  title = "Flash";
+  items = (
+    {
+      cell = PSGroupCell;
+      headerCellClass = FLASHHeaderCell;
+    },
+    {
+      cell = PSSwitchCell;
+      cellClass = FLASHSwitchTableCell;
+      PostNotification = "com.golddavid.flash/ReloadPrefs";
+      key = "Enabled";
+      id = "Enabled";
+      label = "Enabled";
+      icon = "Enabled.png";
+      default = 1;
+      defaults = "com.golddavid.flash";
+    },
+
+    {
+      cell = PSGroupCell;
+      label = "Options";
+      footerText = "© 2015 David Goldman and Andrew Abosh";
+    },
+    {
+      cell = PSSwitchCell;
+      cellClass = FLASHSwitchTableCell;
+      PostNotification = "com.golddavid.flash/ReloadPrefs";
+      key = "ClassicIcon";
+      label = "Use Classic Icon";
+      icon = "Icon Appearance.png";
+      default = 1;
+      defaults = "com.golddavid.flash";
+    },
+    {
+      cell = PSSwitchCell;
+      cellClass = FLASHSwitchTableCell;
+      PostNotification = "com.golddavid.flash/ReloadPrefs";
+      key = "OverrideHandoff";
+      label = "Override Siri Suggestions";
+      icon = "Override Siri.png";
+      default = 0;
+      defaults = "com.golddavid.flash";
+    },
+    {
+      cell = PSStaticTextCell;
+      id = "LightLevelText";
+      label = "Light Level";
+      icon = "Light Level.png";
+    },
+    {
+      cell = PSSliderCell;
+      PostNotification = "com.golddavid.flash/ReloadPrefs";
+      key = "LuxCutoff";
+      default = 6;
+      defaults = "com.golddavid.flash";
+      min = 1;
+      max = 11;
+      isSegmented = 1;
+    }
+  );
+}

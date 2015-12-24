@@ -5,3 +5,5 @@ src/.theos/
 src/obj/
 
 src/debs/
+
+src/Flash/obj/

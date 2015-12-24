@@ -1,0 +1,10 @@
+{
+  entry = {
+    bundle = Flash;
+    cell = PSLinkCell;
+    detail = FLASHListController;
+    icon = Flash.png;
+    isController = 1;
+    label = Flash;
+  };
+}
