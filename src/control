@@ -1,9 +1,10 @@
 Package: com.golddavid.flash
 Name: Flash
-Depends: mobilesubstrate
+Depends: firmware (>= 8.0), mobilesubstrate (>= 0.9.5.000), preferenceloader
 Version: 1.0.1
 Architecture: iphoneos-arm
 Description: Light in a flash
+Depiction: http://apt.golddavid.com/depictions/Flash.html
 Maintainer: David Goldman <help@golddavid.com>
 Author: David Goldman <help@golddavid.com>
 Section: Tweaks
