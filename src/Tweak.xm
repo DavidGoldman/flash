@@ -52,8 +52,13 @@ static NSString * const kFlashGrabberRequester = @"FLASH";
 
 %new
 - (BOOL)FLASH_canShowButton {
+  FLASHPrefsManager *prefsManager = [FLASHPrefsManager sharedInstance];
+  if (!prefsManager.enabled) {
+    return NO;
+  }
+
   NSMutableSet *requesters = MSHookIvar<NSMutableSet *>(self, "_bottomLeftGrabberHiddenRequesters");
-  if ([FLASHPrefsManager sharedInstance].overrideHandoff) {
+  if (prefsManager.overrideHandoff) {
     NSUInteger count = requesters.count;
     if ([requesters containsObject:kFlashGrabberRequester]) {
       --count;
