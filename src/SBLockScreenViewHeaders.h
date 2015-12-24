@@ -1,4 +1,6 @@
-@class FLASHFlashButton, SBSlideUpAppGrabberView;
+#import "FLASHFlashButton.h"
+
+@class SBSlideUpAppGrabberView;
 
 @interface SBLockScreenScrollView : UIScrollView
 @end
@@ -11,17 +13,19 @@
 @property(assign, nonatomic) NSInteger style;
 @end
 
-@interface SBLockScreenView : UIView
+@interface SBLockScreenView : UIView<FLASHFlashButtonDelegate>
 @property(retain, nonatomic) _UILegibilitySettings *legibilitySettings;
 @property(retain, nonatomic) SBSlideUpAppGrabberView *cameraGrabberView;
 @property(retain, nonatomic) UIView *bottomLeftGrabberView;
 
+- (SBLegibilitySettings *)_legibilityPrototypeSettings;
 - (BOOL)_shouldUseVibrancy;
 - (void)_updateCornerGrabberBackground;
 - (void)_updateCornerGrabberLegibilityIfNecessary;
 - (void)_updateVibrantView:(id)view screenRect:(CGRect)rect backgroundView:(id)bgView;
-- (SBLegibilitySettings *)_legibilityPrototypeSettings;
+- (void)setBottomLeftGrabberHidden:(BOOL)hidden forRequester:(id)requester;
 
+- (BOOL)FLASH_canShowButton;
 - (void)FLASH_addOrRemoveButton:(BOOL)addButton;
 - (UIView *)FLASH_flashButtonWallpaperEffectView;
 - (FLASHFlashButton *)FLASH_flashButton;

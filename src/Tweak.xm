@@ -2,6 +2,7 @@
 #import "BCBerryView.h"
 #import "FLASHFlashButton.h"
 #import "FLASHFlashController.h"
+#import "FLASHPrefsManager.h"
 #import "SBCCFlashlightSetting.h"
 #import "SBLockScreenViewHeaders.h"
 #import "SBSlideUpAppGrabberView.h"
@@ -12,6 +13,8 @@ static const CGFloat kButtonSize = 50;
 
 static const NSInteger kWallpaperVariantStaticWallpaper = 0;
 static const NSInteger kWallpaperStyleSemiLightTintedBlur = 10;
+
+static NSString * const kFlashGrabberRequester = @"FLASH";
 
 %hook SBCCFlashlightSetting
 - (id)init {
@@ -48,6 +51,19 @@ static const NSInteger kWallpaperStyleSemiLightTintedBlur = 10;
 }
 
 %new
+- (BOOL)FLASH_canShowButton {
+  NSMutableSet *requesters = MSHookIvar<NSMutableSet *>(self, "_bottomLeftGrabberHiddenRequesters");
+  if ([FLASHPrefsManager sharedInstance].overrideHandoff) {
+    NSUInteger count = requesters.count;
+    if ([requesters containsObject:kFlashGrabberRequester]) {
+      --count;
+    }
+    return (count == 0);
+  }
+  return (!self.bottomLeftGrabberView && requesters.count == 0);
+}
+
+%new
 - (void)FLASH_addOrRemoveButton:(BOOL)addButton {
   FLASHFlashButton *button = [self FLASH_flashButton];
 
@@ -58,8 +74,11 @@ static const NSInteger kWallpaperStyleSemiLightTintedBlur = 10;
       // This can be called from within an animation block, so we have to be careful as we don't
       // want the init occurring with an animation.
       [UIView performWithoutAnimation:^{
-          FLASHFlashButton *fb = [[FLASHFlashButton alloc] initWithFrame:CGRectZero classicIcon:NO];
+          BOOL classicIcon = [FLASHPrefsManager sharedInstance].classicIcon;
+          FLASHFlashButton *fb = [[FLASHFlashButton alloc] initWithFrame:CGRectZero
+                                                             classicIcon:classicIcon];
           fb.tag = kFlashButtonTag;
+          fb.delegate = self;
           [foregroundLockHUDView addSubview:fb];
           [self _updateCornerGrabberBackground];
           [self _updateCornerGrabberLegibilityIfNecessary];
@@ -68,6 +87,14 @@ static const NSInteger kWallpaperStyleSemiLightTintedBlur = 10;
     }
   } else {
     [button removeFromSuperview];
+    [self setBottomLeftGrabberHidden:NO forRequester:kFlashGrabberRequester];
+  }
+}
+
+%new
+- (void)flashButton:(FLASHFlashButton *)button becameVisible:(BOOL)visible {
+  if ([FLASHPrefsManager sharedInstance].overrideHandoff) {
+    [self setBottomLeftGrabberHidden:visible forRequester:kFlashGrabberRequester];
   }
 }
 
@@ -109,13 +136,13 @@ static const NSInteger kWallpaperStyleSemiLightTintedBlur = 10;
 
 - (void)setBottomLeftGrabberView:(UIView *)view {
   %orig;
-  NSMutableSet *requesters = MSHookIvar<NSMutableSet *>(self, "_bottomLeftGrabberHiddenRequesters");
-  [self FLASH_addOrRemoveButton:(!view && requesters.count == 0)];
+  [self FLASH_addOrRemoveButton:[self FLASH_canShowButton]];
 }
 - (void)setBottomLeftGrabberHidden:(BOOL)hidden forRequester:(id)requester {
   %orig;
-  NSMutableSet *requesters = MSHookIvar<NSMutableSet *>(self, "_bottomLeftGrabberHiddenRequesters");
-  [self FLASH_addOrRemoveButton:(!self.bottomLeftGrabberView && requesters.count == 0)];
+  if (![requester isEqual:kFlashGrabberRequester]) {
+    [self FLASH_addOrRemoveButton:[self FLASH_canShowButton]];
+  }
 }
 - (void)_layoutBottomLeftGrabberView {
   %orig;

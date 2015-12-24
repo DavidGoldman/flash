@@ -4,6 +4,7 @@
 
 #import "Macros.h"
 #import "FLASHFlashButton.h"
+#import "FLASHPrefsManager.h"
 #import "SBCCFlashlightSetting.h"
 
 static const int kDefaultHashTableCapacity = 8;
@@ -11,9 +12,6 @@ static const int kSensorInterval = (int) (0.5 * 1000000); // Check every half se
 static const int kPrimaryUsagePage = 0xff00;
 static const int kPrimaryUsage = 4;
 
-// You can lower this if it's triggering when there's a decent amount of light. The min lux value is
-// 0, so this should be >= 1.
-static const int kMinLuxForHidden = 6;
 static const int kUnassignedLux = -1;
 
 static NSString * const kColorFlowColorization = @"ColorFlowLockScreenColorizationNotification";
@@ -121,7 +119,7 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
     _prevLux = lux;
     return;
   }
-  BOOL show = flashOn || (_prevLux + lux < 2 * kMinLuxForHidden);
+  BOOL show = flashOn || (_prevLux + lux < 2 * [FLASHPrefsManager sharedInstance].luxCutoff);
   _prevLux = lux;
   [self _showDelegates:show immediately:NO];
 }

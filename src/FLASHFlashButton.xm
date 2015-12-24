@@ -4,6 +4,7 @@
 #import "Macros.h"
 
 #import "SBFLockScreenMetrics.h"
+#import "SBFWeakReference.h"
 #import "SBLockScreenViewHeaders.h"
 #import "SBSlideUpAppGrabberView.h"
 #import "UIImage+Private.h"
@@ -25,6 +26,7 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
 @implementation FLASHFlashButton {
   UIImageView *_flashImageView;
   SBSlideUpAppGrabberView *_slideUpAppGrabberView;
+  SBFWeakReference *_delegateWeakRef;
   NSTimer *_hideTimer;
 }
 
@@ -33,7 +35,6 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
   if (self) {
     UITapGestureRecognizer *tapGestureRecogizer =
         [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleTap:)];
-    tapGestureRecogizer.delegate = self;
     [self addGestureRecognizer:tapGestureRecogizer];
     [getLockScreenScrollView().panGestureRecognizer requireGestureRecognizerToFail:tapGestureRecogizer];
     [tapGestureRecogizer release];
@@ -76,6 +77,7 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
   // _hideTimer must be nil otherwise we wouldn't dealloc (it holds a strong ref to us).
   [_flashImageView release];
   [_slideUpAppGrabberView release];
+  [_delegateWeakRef release];
   [super dealloc];
 }
 
@@ -170,8 +172,23 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
   }
 }
 
+// Changes the visiblity and notifies the delegate. When setting to visible, it notifies the
+// delegate immediately. Otherwise, it notifies the delegate when the button is no longer visible
+// (i.e. animation completes).
 - (void)_visibilityChangedAnimated:(BOOL)animated {
+  BOOL visible = _visible;
   if (animated) {
+    void (^completionBlock)(BOOL) = nil;
+    if (visible) {
+      [self _notifyDelegate];
+    } else {
+      completionBlock = ^(BOOL finished) {
+          if (_visible == visible) {
+            [self _notifyDelegate];
+          }
+      };
+    }
+
     UIViewAnimationOptions options = UIViewAnimationOptionAllowUserInteraction |
         UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut |
         UIViewAnimationOptionTransitionNone;
@@ -179,11 +196,36 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
                           delay:0
                         options:options
                      animations:^{
-                         self.alpha = (_visible) ? 1 : 0;
+                         self.alpha = (visible) ? 1 : 0;
                      }
-                     completion:nil];
+                     completion:completionBlock];
   } else {
-    self.alpha = (_visible) ? 1 : 0;
+    self.alpha = (visible) ? 1 : 0;
+    [self _notifyDelegate];
+  }
+}
+
+#pragma mark - Delegate
+
+- (void)_notifyDelegate {
+  [self.delegate flashButton:self becameVisible:_visible];
+}
+
+- (id<FLASHFlashButtonDelegate>)delegate {
+  return [_delegateWeakRef object];
+}
+
+- (void)setDelegate:(id<FLASHFlashButtonDelegate>)delegate {
+  if (!delegate) {
+    [_delegateWeakRef release];
+    _delegateWeakRef = nil;
+    return;
+  }
+  id<FLASHFlashButtonDelegate> currentDelegate = self.delegate;
+  if (![currentDelegate isEqual:delegate]) {
+    [_delegateWeakRef release];
+    _delegateWeakRef = [[%c(SBFWeakReference) alloc] initWithObject:delegate];
+    [self _notifyDelegate];
   }
 }
 
@@ -204,19 +246,6 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
 
     [self _iconView].alpha = (flag) ? kOnAlpha : kOffAlpha;
   }
-}
-
-#pragma mark - UIGestureRecognizerDelegate
-
-// Tether support. I'm watching you, @phillipten.
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
-  shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-  Class DGTController = %c(DGTController);
-  if (DGTController && [otherGestureRecognizer isKindOfClass:[UITapGestureRecognizer class]] &&
-      [otherGestureRecognizer.delegate isKindOfClass:DGTController]) {
-    return YES;
-  }
-  return NO;
 }
 
 @end
