@@ -18,10 +18,13 @@ static UIColor * UIColorFromRGB(int rgb) {
   if(_specifiers == nil) {
     _specifiers = [[self loadSpecifiersFromPlistName:@"Flash" target:self] retain];
 
-    Class PSUIDisplayController = %c(PSUIDisplayController);
-    if (PSUIDisplayController) {
+    Class DisplayController = %c(PSUIDisplayController); // Appears to be iOS 9+.
+    if (!DisplayController) { // iOS 8.
+      DisplayController = %c(DisplayController);
+    }
+    if (DisplayController) {
       PSSpecifier *luxCutoffSpecifier = [_specifiers specifierForID:@"LuxCutoff"];
-      NSBundle *bundle = [NSBundle bundleForClass:PSUIDisplayController];
+      NSBundle *bundle = [NSBundle bundleForClass:DisplayController];
       UIImage *leftImage = [UIImage imageNamed:@"LessBright" inBundle:bundle];
       UIImage *rightImage = [UIImage imageNamed:@"MoreBright" inBundle:bundle];
       if (leftImage && rightImage) {
