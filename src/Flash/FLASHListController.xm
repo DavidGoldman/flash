@@ -3,6 +3,8 @@
 #import "FLASHHeaderCell.h"
 #import "FLASHSwitchTableCell.h"
 
+#import "../UIImage+Private.h"
+
 static UIColor * UIColorFromRGB(int rgb) {
   return [UIColor colorWithRed:((rgb >> 16) & 0xFF) / 255.0F
                          green:((rgb >> 8) & 0xFF) / 255.0F
@@ -13,10 +15,22 @@ static UIColor * UIColorFromRGB(int rgb) {
 @implementation FLASHListController
 
 - (id)specifiers {
-	if(_specifiers == nil) {
-		_specifiers = [[self loadSpecifiersFromPlistName:@"Flash" target:self] retain];
-	}
-	return _specifiers;
+  if(_specifiers == nil) {
+    _specifiers = [[self loadSpecifiersFromPlistName:@"Flash" target:self] retain];
+
+    Class PSUIDisplayController = %c(PSUIDisplayController);
+    if (PSUIDisplayController) {
+      PSSpecifier *luxCutoffSpecifier = [_specifiers specifierForID:@"LuxCutoff"];
+      NSBundle *bundle = [NSBundle bundleForClass:PSUIDisplayController];
+      UIImage *leftImage = [UIImage imageNamed:@"LessBright" inBundle:bundle];
+      UIImage *rightImage = [UIImage imageNamed:@"MoreBright" inBundle:bundle];
+      if (leftImage && rightImage) {
+        [luxCutoffSpecifier setProperty:leftImage forKey:@"leftImage"];
+        [luxCutoffSpecifier setProperty:rightImage forKey:@"rightImage"];
+      }
+    }
+  }
+  return _specifiers;
 }
 
 - (id)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {

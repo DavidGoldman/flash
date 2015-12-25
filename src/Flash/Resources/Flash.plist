@@ -57,6 +57,7 @@
       cell = PSSliderCell;
       PostNotification = "com.golddavid.flash/ReloadPrefs";
       key = "LuxCutoff";
+      id = "LuxCutoff";
       default = 6;
       defaults = "com.golddavid.flash";
       min = 1;
