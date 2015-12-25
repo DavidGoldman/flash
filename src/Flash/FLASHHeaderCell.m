@@ -121,7 +121,7 @@ static CGFloat screenIntegral(CGFloat dim) {
 
 - (CGRect)_overlayFrame {
   CGRect bounds = self.bounds;
-  CGFloat scale = bounds.size.width / 375;
+  CGFloat scale = bounds.size.width / 375 / 2;
   CGSize size = _overlayView.image.size;
   size.width = screenIntegral(size.width * scale);
   size.height = screenIntegral(size.height * scale);
