@@ -1,10 +1,13 @@
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 #import "FLASHFlashButton.h"
 
 #import "FLASHFlashController.h"
 #import "Macros.h"
 
 #import "SBFLockScreenMetrics.h"
-#import "SBFWeakReference.h"
 #import "SBLockScreenViewHeaders.h"
 #import "SBSlideUpAppGrabberView.h"
 #import "UIImage+Private.h"
@@ -23,10 +26,13 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
   return [vc lockScreenScrollView];
 }
 
+@interface FLASHFlashButton()
+@property(nonatomic, weak) id<FLASHFlashButtonDelegate> delegate;
+@end
+
 @implementation FLASHFlashButton {
   UIImageView *_flashImageView;
   SBSlideUpAppGrabberView *_slideUpAppGrabberView;
-  SBFWeakReference *_delegateWeakRef;
   NSTimer *_hideTimer;
 }
 
@@ -37,7 +43,6 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
         [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleTap:)];
     [self addGestureRecognizer:tapGestureRecogizer];
     [getLockScreenScrollView().panGestureRecognizer requireGestureRecognizerToFail:tapGestureRecogizer];
-    [tapGestureRecogizer release];
 
     NSBundle *bundle = [NSBundle bundleWithPath:kPrefsBundlePath];
     if (classicIcon) {
@@ -71,14 +76,6 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
   } else {
     [[FLASHFlashController sharedFlashController] removeDelegate:self];
   }
-}
-
-- (void)dealloc {
-  // _hideTimer must be nil otherwise we wouldn't dealloc (it holds a strong ref to us).
-  [_flashImageView release];
-  [_slideUpAppGrabberView release];
-  [_delegateWeakRef release];
-  [super dealloc];
 }
 
 - (void)layoutSubviews {
@@ -115,20 +112,18 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
 #pragma mark - Timering
 
 - (void)_addTimer {
-  if (!_hideTimer) {
-    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:kHideTimerInterval
-                                                      target:self
-                                                    selector:@selector(_timerDidFire:)
-                                                    userInfo:nil
-                                                     repeats:NO];
-    _hideTimer = [timer retain];
+  if (!_hideTimer && ![self.delegate shouldFlashButtonSuppressHideTimer:self]) {
+    _hideTimer = [NSTimer scheduledTimerWithTimeInterval:kHideTimerInterval
+                                                  target:self
+                                                selector:@selector(_timerDidFire:)
+                                                userInfo:nil
+                                                 repeats:NO];
   }
 }
 
 - (void)_removeTimer {
   if (_hideTimer) {
     [_hideTimer invalidate];
-    [_hideTimer release];
     _hideTimer = nil;
   }
 }
@@ -211,20 +206,9 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
   [self.delegate flashButton:self becameVisible:_visible];
 }
 
-- (id<FLASHFlashButtonDelegate>)delegate {
-  return [_delegateWeakRef object];
-}
-
 - (void)setDelegate:(id<FLASHFlashButtonDelegate>)delegate {
-  if (!delegate) {
-    [_delegateWeakRef release];
-    _delegateWeakRef = nil;
-    return;
-  }
-  id<FLASHFlashButtonDelegate> currentDelegate = self.delegate;
-  if (![currentDelegate isEqual:delegate]) {
-    [_delegateWeakRef release];
-    _delegateWeakRef = [[%c(SBFWeakReference) alloc] initWithObject:delegate];
+  if (![_delegate isEqual:delegate]) {
+    _delegate = delegate;
     [self _notifyDelegate];
   }
 }

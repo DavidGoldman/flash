@@ -7,9 +7,11 @@ static NSString * const kEnabledKey = @"Enabled";
 static NSString * const kGhostedIconKey = @"GhostedIcon";
 static NSString * const kHandoffKey = @"OverrideHandoff";
 static NSString * const kCutoffKey = @"LuxCutoff";
+static NSString * const kLightCheckKey = @"IgnoreLightCheck";
 static const BOOL kDefaultEnabled = YES;
 static const BOOL kDefaultGhostedIcon = NO;
 static const BOOL kDefaultOverrideHandoff = NO;
+static const BOOL kDefaultIgnoreLightCheck = NO;
 static const int kDefaultLuxCutoff = 6;
 
 static void refreshPrefs(CFNotificationCenterRef center, void *observer, CFStringRef name,
@@ -33,6 +35,7 @@ static void refreshPrefs(CFNotificationCenterRef center, void *observer, CFStrin
     _ghostedIcon = kDefaultGhostedIcon;
     _overrideHandoff = kDefaultOverrideHandoff;
     _luxCutoff = kDefaultLuxCutoff;
+    _ignoreLightCheck = kDefaultIgnoreLightCheck;
 
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), 
                                     self,
@@ -61,6 +64,7 @@ static void refreshPrefs(CFNotificationCenterRef center, void *observer, CFStrin
   self.enabled = [self boolForValue:prefs[kEnabledKey] withDefault:kDefaultEnabled];
   self.ghostedIcon = [self boolForValue:prefs[kGhostedIconKey] withDefault:kDefaultGhostedIcon];
   self.overrideHandoff = [self boolForValue:prefs[kHandoffKey] withDefault:kDefaultOverrideHandoff];
+  self.ignoreLightCheck = [self boolForValue:prefs[kLightCheckKey] withDefault:kDefaultIgnoreLightCheck];
   self.luxCutoff = [self intForValue:prefs[kCutoffKey] withDefault:kDefaultLuxCutoff];
 }
 

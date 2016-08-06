@@ -1,7 +1,7 @@
-include theos/makefiles/common.mk
+include $(THEOS)/makefiles/common.mk
 
 BUNDLE_NAME = Flash
-Flash_FILES = FLASHListController.xm FLASHSwitchTableCell.m FLASHHeaderCell.m FLASHTableCell.m
+Flash_FILES = FLASHListController.xm FLASHSwitchTableCell.m FLASHHeaderCell.xm FLASHTableCell.m
 Flash_INSTALL_PATH = /Library/PreferenceBundles
 Flash_FRAMEWORKS = UIKit CoreGraphics
 Flash_PRIVATE_FRAMEWORKS = Preferences

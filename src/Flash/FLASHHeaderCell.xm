@@ -63,6 +63,18 @@ static CGFloat screenIntegral(CGFloat dim) {
   return [self preferredHeightForWidth:width];
 }
 
+#pragma mark - Hacks
+
+// This is needed, otherwise the TableView thinks that this header needs to treated as TableViewCell
+// and when we animate the specifiers, it somehow removes the specifier from this view causing it to
+// be hidden.
+- (BOOL)isKindOfClass:(Class)clazz {
+  if (clazz == %c(UITableViewCell)) {
+    return NO;
+  }
+  return [super isKindOfClass:clazz];
+}
+
 #pragma mark - Overrides
 
 - (void)layoutSubviews {

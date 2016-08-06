@@ -102,6 +102,10 @@ static NSString * const kFlashGrabberRequester = @"FLASH";
     [self setBottomLeftGrabberHidden:visible forRequester:kFlashGrabberRequester];
   }
 }
+%new
+- (BOOL)shouldFlashButtonSuppressHideTimer:(FLASHFlashButton *)button {
+  return [FLASHPrefsManager sharedInstance].ignoreLightCheck;
+}
 
 - (void)_updateCornerGrabberBackground {
   %orig;

@@ -21,7 +21,7 @@
     {
       cell = PSGroupCell;
       label = "Options";
-      footerText = "© 2015 David Goldman and Andrew Abosh";
+      footerText = "© 2016 David Goldman and Andrew Abosh";
     },
     {
       cell = PSSwitchCell;
@@ -42,6 +42,18 @@
       label = "Override Siri Suggestions";
       sublabel = "Take priority over any Siri Suggestion.";
       icon = "Override Siri.png";
+      default = 0;
+      defaults = "com.golddavid.flash";
+    },
+    {
+      cell = PSSwitchCell;
+      cellClass = FLASHSwitchTableCell;
+      PostNotification = "com.golddavid.flash/ReloadPrefs";
+      key = "IgnoreLightCheck";
+      label = "Ignore Light Level";
+      sublabel = "Display regardless of light level.";
+      icon = "Ignore Light Level.png";
+      set = "setIgnoreLightCheckEnabled:forSpecifier:";
       default = 0;
       defaults = "com.golddavid.flash";
     },

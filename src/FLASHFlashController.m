@@ -162,7 +162,9 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
 
     if (screenOn) {
       _prevLux = kUnassignedLux; // TODO: Potentially remove this. Might slow it down too much.
-      [self _showDelegates:_flashlightSetting.flashlightOn immediately:YES];
+      BOOL show =
+          _flashlightSetting.flashlightOn || [FLASHPrefsManager sharedInstance].ignoreLightCheck;
+      [self _showDelegates:show immediately:YES];
       [self _bindSystemClient];
     } else {
       [self _unbindSystemClient];
@@ -173,6 +175,9 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
 #pragma mark - HID Stuff
 
 - (void)_bindSystemClient {
+  if ([FLASHPrefsManager sharedInstance].ignoreLightCheck) {
+    return;
+  }
   if (!_eventSystemClientRegistered && _screenIsOn && _delegates.count > 0) {
     IOHIDEventSystemClientScheduleWithRunLoop(_eventSystemClient, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     IOHIDEventSystemClientRegisterEventCallback(_eventSystemClient, &handleHIDEvent, self, NULL);
