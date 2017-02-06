@@ -20,10 +20,13 @@ static const NSTimeInterval kAnimationDuration = 0.35;
 
 static NSString * const kColorFlowSecondaryColorKey = @"SecondaryColor";
 
-static SBLockScreenScrollView * getLockScreenScrollView() {
+static UIGestureRecognizer * getLockScreenScrollViewPanGestureRecognizer() {
   SBLockScreenViewController *vc =
       [[%c(SBLockScreenManager) sharedInstance] lockScreenViewController];
-  return [vc lockScreenScrollView];
+  if ([vc respondsToSelector:@selector(lockScreenScrollView)]) {
+    return [vc lockScreenScrollView].panGestureRecognizer;  
+  }
+  return nil;
 }
 
 @interface FLASHFlashButton()
@@ -42,7 +45,7 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
     UITapGestureRecognizer *tapGestureRecogizer =
         [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleTap:)];
     [self addGestureRecognizer:tapGestureRecogizer];
-    [getLockScreenScrollView().panGestureRecognizer requireGestureRecognizerToFail:tapGestureRecogizer];
+    [getLockScreenScrollViewPanGestureRecognizer() requireGestureRecognizerToFail:tapGestureRecogizer];
 
     NSBundle *bundle = [NSBundle bundleWithPath:kPrefsBundlePath];
     if (classicIcon) {
@@ -54,8 +57,19 @@ static SBLockScreenScrollView * getLockScreenScrollView() {
       UIImage *icon = [UIImage imageNamed:@"FlashGhosted" inBundle:bundle];
       _slideUpAppGrabberView = [[%c(SBSlideUpAppGrabberView) alloc] initWithAdditionalTopPadding:NO
                                                                             invertVerticalInsets:NO];
-      [_slideUpAppGrabberView setGrabberImage:icon];
-      [_slideUpAppGrabberView sizeToFit];
+      if ([_slideUpAppGrabberView respondsToSelector:@selector(setGrabberImage:)]) {
+        [_slideUpAppGrabberView setGrabberImage:icon];
+        [_slideUpAppGrabberView sizeToFit];
+      } else {
+        CGSize iconSize = icon.size;
+        CGRect frame = CGRectMake(0, 0, iconSize.width, iconSize.height);
+
+        CALayer *maskLayer = [CALayer layer];
+        maskLayer.frame = frame;
+        maskLayer.contents = (id)icon.CGImage;
+        _slideUpAppGrabberView.layer.mask = maskLayer;
+        _slideUpAppGrabberView.frame = frame;
+      }
       _slideUpAppGrabberView.vibrancyAllowed = YES;
       _slideUpAppGrabberView.alpha = kOffAlpha;
       _slideUpAppGrabberView.userInteractionEnabled = NO;
