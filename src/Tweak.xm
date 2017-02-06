@@ -73,7 +73,8 @@ static NSString * const kFlashGrabberRequester = @"FLASH";
   if (!prefsManager.enabled) {
     return NO;
   }
-  return !self.slideUpAppGrabberViewVisible;
+  SBSlideUpAppGrabberView *grabberView = self.slideUpAppGrabberView;
+  return !grabberView.superview || CGSizeEqualToSize(grabberView.frame.size, CGSizeZero);
 }
 
 %new
@@ -97,13 +98,13 @@ static NSString * const kFlashGrabberRequester = @"FLASH";
     }
   } else {
     [button removeFromSuperview];
-    // [self setBottomLeftGrabberHidden:NO forRequester:kFlashGrabberRequester];
   }
 }
 %new
 - (void)flashButton:(FLASHFlashButton *)button becameVisible:(BOOL)visible {
+  // TODO: Test this.
   if ([FLASHPrefsManager sharedInstance].overrideHandoff) {
-    // [self setBottomLeftGrabberHidden:visible forRequester:kFlashGrabberRequester];
+    self.slideUpAppGrabberViewVisible = !visible;
   }
 }
 %new
@@ -144,7 +145,10 @@ static NSString * const kFlashGrabberRequester = @"FLASH";
   [self FLASH_addOrRemoveButton:[self FLASH_canShowButton]];
 }
 - (void)setSlideUpAppGrabberViewVisible:(BOOL)visible {
-  %orig;
+  if ([FLASHPrefsManager sharedInstance].overrideHandoff) {
+    visible = NO;
+  }
+  %orig(visible);
 
   [self FLASH_addOrRemoveButton:[self FLASH_canShowButton]];
 }

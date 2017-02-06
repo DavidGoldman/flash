@@ -19,6 +19,7 @@
 // iOS 10
 @interface SBDashBoardMainPageView : UIView<FLASHFlashButtonDelegate>
 @property(retain, nonatomic) _UILegibilitySettings *legibilitySettings;
+@property(retain, nonatomic) SBSlideUpAppGrabberView *slideUpAppGrabberView; 
 @property(assign, nonatomic) BOOL slideUpAppGrabberViewVisible;
 
 - (SBLegibilitySettings *)_legibilityPrototypeSettings;
