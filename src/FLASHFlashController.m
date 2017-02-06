@@ -69,11 +69,11 @@ static void handleHIDEvent(void *target, void *refcon, IOHIDEventQueueRef queue,
         IOHIDServiceClientRef service = (IOHIDServiceClientRef) CFArrayGetValueAtIndex(services, 0);
         IOHIDServiceClientSetProperty(service, CFSTR("ReportInterval"), (CFNumberRef) @(kSensorInterval));
       } else {
-        INFO(@"Whack systemClientServices %@", services);
+        HBLogInfo(@"Whack systemClientServices %@", services);
       }
       CFRelease(services);
     } else {
-      INFO(@"IOHIDEventSystemClientCopyServices returned nil");
+      HBLogInfo(@"IOHIDEventSystemClientCopyServices returned nil");
     }
 
     NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
