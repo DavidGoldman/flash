@@ -90,8 +90,8 @@ static NSString * const kFlashGrabberRequester = @"FLASH";
           FLASHFlashButton *fb = [[FLASHFlashButton alloc] initWithFrame:CGRectZero
                                                              classicIcon:classicIcon];
           fb.tag = kFlashButtonTag;
-          fb.delegate = self;
           [self addSubview:fb];
+          fb.delegate = self; // Set delegate after adding to prevent possible infinite recursion.
           [self _updateSlideUpAppGrabberViewForLegibilitySettings];
           [fb release];
       }];
