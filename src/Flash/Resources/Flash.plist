@@ -21,7 +21,7 @@
     {
       cell = PSGroupCell;
       label = "Options";
-      footerText = "© 2016 David Goldman and Andrew Abosh";
+      footerText = "© 2017 David Goldman and Andrew Abosh";
     },
     {
       cell = PSSwitchCell;
