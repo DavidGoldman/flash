@@ -16,6 +16,10 @@
 @property(assign, nonatomic) NSInteger style;
 @end
 
+@interface UIView (Private)
+@property(getter=_viewDelegate, setter=_setViewDelegate:, nonatomic) UIViewController *viewDelegate;
+@end
+
 // iOS 10
 @interface SBDashBoardMainPageView : UIView<FLASHFlashButtonDelegate>
 @property(retain, nonatomic) _UILegibilitySettings *legibilitySettings;
@@ -26,10 +30,17 @@
 - (void)_updateSlideToAppGrabberBackgroundView;
 - (void)_updateSlideUpAppGrabberViewForLegibilitySettings;
 
+- (UIView *)FLASH_mainPageView;
 - (BOOL)FLASH_canShowButton;
 - (void)FLASH_addOrRemoveButton:(BOOL)addButton;
 - (UIView *)FLASH_flashButtonWallpaperEffectView;
 - (FLASHFlashButton *)FLASH_flashButton;
+@end
+@interface SBDashBoardMainPageContentViewController : UIViewController
+- (UIViewController *)presenter;
+@end
+@interface SBDashBoardPageViewBase : UIView
+@property(nonatomic, retain) UIViewController *pageViewController;
 @end
 
 // Only on iOS 10

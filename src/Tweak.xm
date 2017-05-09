@@ -47,10 +47,33 @@ static NSString * const kFlashGrabberRequester = @"FLASH";
 %end
 
 %group iOS_10
+%hook SBDashBoardPageViewBase
+- (void)didMoveToWindow {
+  if (![self.pageViewController isKindOfClass:%c(SBDashBoardMainPageViewController)]) {
+    return;
+  }
+  UIView *flashButton = [self viewWithTag:kFlashButtonTag];
+  if (flashButton) {
+    [self bringSubviewToFront:flashButton];
+  }
+}
+%end
 %hook SBDashBoardMainPageView
+
+%new
+- (UIView *)FLASH_mainPageView {
+  UIViewController *controller = self.viewDelegate;
+  if ([controller respondsToSelector:@selector(presenter)]) {
+    UIViewController *presenter = [(SBDashBoardMainPageContentViewController *)controller presenter];
+    return presenter.view;
+  }
+  return nil;
+}
+
 %new
 - (FLASHFlashButton *)FLASH_flashButton {
-  return (FLASHFlashButton *) [self viewWithTag:kFlashButtonTag];
+  UIView *mainPageView = [self FLASH_mainPageView];
+  return (FLASHFlashButton *) [mainPageView viewWithTag:kFlashButtonTag];
 }
 
 %new
@@ -90,7 +113,8 @@ static NSString * const kFlashGrabberRequester = @"FLASH";
           FLASHFlashButton *fb = [[FLASHFlashButton alloc] initWithFrame:CGRectZero
                                                              classicIcon:classicIcon];
           fb.tag = kFlashButtonTag;
-          [self addSubview:fb];
+          UIView *mainPageView = [self FLASH_mainPageView];
+          [mainPageView addSubview:fb];
           fb.delegate = self; // Set delegate after adding to prevent possible infinite recursion.
           [self _updateSlideUpAppGrabberViewForLegibilitySettings];
           [fb release];
