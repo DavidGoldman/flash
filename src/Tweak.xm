@@ -49,6 +49,8 @@ static NSString * const kFlashGrabberRequester = @"FLASH";
 %group iOS_10
 %hook SBDashBoardPageViewBase
 - (void)didMoveToWindow {
+  %orig;
+
   if (![self.pageViewController isKindOfClass:%c(SBDashBoardMainPageViewController)]) {
     return;
   }
