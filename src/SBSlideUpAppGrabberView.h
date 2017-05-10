@@ -13,6 +13,10 @@
 - (void)updateForChangedSettings:(id)settings;
 - (void)setLegibilitySettings:(id)settings;
 @end
-@interface SBSlideUpAppGrabberView (ColorFlow2)
+@interface SBSlideUpAppGrabberView (ColorFlow)
 - (void)cfw_colorizeWithColor:(UIColor *)color;
 @end
+@interface SBSlideUpAppGrabberView (Flash)
+- (void)FLASH_setGrabberImage:(UIImage *)image;
+@end
+

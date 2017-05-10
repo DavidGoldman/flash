@@ -47,6 +47,28 @@ static NSString * const kFlashGrabberRequester = @"FLASH";
 %end
 
 %group iOS_10
+
+// Utility method, as it was removed in iOS 10.
+%hook SBSlideUpAppGrabberView
+%new
+- (void)FLASH_setGrabberImage:(UIImage *)image {
+  CGSize imageSize = image.size;
+  CGRect frame = CGRectMake(0, 0, imageSize.width, imageSize.height);
+
+  CALayer *maskLayer = [CALayer layer];
+  maskLayer.frame = frame;
+  maskLayer.contents = (id)image.CGImage;
+  self.layer.mask = maskLayer;
+  self.frame = frame;
+
+  UIView *iconView = MSHookIvar<UIView *>(self, "_saturatedIconView");
+  if (iconView) {
+    [iconView removeFromSuperview];
+    [iconView release];
+    MSHookIvar<UIView *>(self, "_saturatedIconView") = nil;
+  }
+}
+%end
 %hook SBDashBoardPageViewBase
 - (void)didMoveToWindow {
   %orig;

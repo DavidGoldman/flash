@@ -61,14 +61,7 @@ static UIGestureRecognizer * getLockScreenScrollViewPanGestureRecognizer() {
         [_slideUpAppGrabberView setGrabberImage:icon];
         [_slideUpAppGrabberView sizeToFit];
       } else {
-        CGSize iconSize = icon.size;
-        CGRect frame = CGRectMake(0, 0, iconSize.width, iconSize.height);
-
-        CALayer *maskLayer = [CALayer layer];
-        maskLayer.frame = frame;
-        maskLayer.contents = (id)icon.CGImage;
-        _slideUpAppGrabberView.layer.mask = maskLayer;
-        _slideUpAppGrabberView.frame = frame;
+        [_slideUpAppGrabberView FLASH_setGrabberImage:icon];
       }
       _slideUpAppGrabberView.vibrancyAllowed = YES;
       _slideUpAppGrabberView.alpha = kOffAlpha;
